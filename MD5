@@ -1,0 +1,14 @@
+22ba4c4d7a6629b3c751c35a8a5e7fed *DESCRIPTION
+e5db1c8d82c11cb0f0a3e2a934feda3d *NAMESPACE
+4d7676e00293e8ff83761e546360a7b2 *R/QR.R
+386bbb35252aba234ecbf269624f8412 *R/bits2int.R
+625260af7bb3bafe6e1dacffa38fc4b4 *R/householder.R
+aec0062df91fdcccbb872ba4139a76a3 *R/mbrd.R
+c83778c61d793c23cfcdcbdfdd620168 *R/mbrdsim.R
+cf16606b2a86178679dd6312395c1074 *R/simrel.R
+62f8772b621e4ebe67a72542d78df173 *R/simrelplot.R
+51721ff1ca0375fd67068c12b4c84a54 *man/mbrd.Rd
+7268d742ef515bab423e4e5cd0d70eda *man/mbrdsim.Rd
+73f298a57367e67a36f789957e47cf4a *man/simrel-package.Rd
+240de06f674fc36ae8a0b4ae3dd4d5a7 *man/simrel.Rd
+b652bfe160f944a4023954c9d0d8046a *man/simrelplot.Rd
