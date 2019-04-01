@@ -1,123 +1,115 @@
-simrel <-
-function(n, p, m, q, relpos, gamma, R2, ntest=NULL, muY=NULL, muX=NULL,sim=NULL){
-  
-  if(q<m) stop(paste("the number of relevant predictors must at least be equal to",m,"\n"))
-  if(!(is.null(sim))){
-    if((sim$m!=m)||(sim$p!=p)||(sim$relpos!=relpos)||(sim$q!=q)||(sim$gamma!=gamma)||(sim$R2!=R2)){
-      stop("Different parameter setting than previous object")
-    }
-  }
-  if(length(relpos)!=m){stop("Mismatch between number of relevant components and the given positions in 'relpos'\n")}
-  
-  irrelpos <- (1:p)[-relpos]
-  extradim <- q - m
-  if(is.null(sim)){
-    qpos <- sort(c(relpos, sample(irrelpos, extradim, replace=F)))
-  }else{
-    qpos <- sim$relpred
-    }
-  lambdas <- exp(-gamma*(1:p))/exp(-gamma)
-  
-  #Construction of Sigma
-  SigmaZ <- diag(lambdas)   
-  
-  SigmaZinv <- diag(1/lambdas)
-  Sigmazy <- matrix(0,p,1)
-  if(is.null(sim)){
-    r <- runif(m, 0, 1)*sample(c(-1,1),m,replace=TRUE)
-  }else{
-    r <- sim$r
-  }
-  Sigmazy[relpos,] <- sign(r)*sqrt(R2*abs(r)/sum(abs(r))*lambdas[relpos])
-  SigmaY <- 1
-  Sigma <- rbind(c(SigmaY,t(Sigmazy)),cbind(Sigmazy, SigmaZ))
-  
-  #Checking that Sigma is PD
-  pd <- all(eigen(Sigma)$values>0)
-  
-  #Finding a rptation matrix which rotates the latent components to yield
-  #relevant X-predictors
-  if(is.null(sim)){
-    Q <- matrix(rnorm(q^2),q)
-    Q <- scale(Q,scale=F)
-    qrobj <- .QR(Q)
-    Rq <- qrobj$Q
-    R <- diag(p)
-    R[qpos, qpos] <- Rq
-    if(q<(p-1)){  
-      Q <- matrix(rnorm((p-q)^2),(p-q))
-      Q <- scale(Q,scale=F)
-      qrobj <- .QR(Q)
-      Rnq <- qrobj$Q
-      R[(1:p)[-qpos],(1:p)[-qpos]] <- Rnq
-    }
-  }else{
-    R <- sim$Rotation
-  }
-  
-  #The true regression coefficients
-  betaZ <- SigmaZinv%*%Sigmazy
-  betaX <- R%*%betaZ
-  beta0 <- 0
-  if(!(is.null(muY))){beta0 <- beta0 + muY}
-  if(!(is.null(muX))){beta0 <- beta0 - t(betaX)%*%muX}
-  #The (true) coefficient of determination, R^2
-  R2 <- t(Sigmazy)%*%betaZ
-  #Minimum prediction error
-  minerror <- SigmaY - R2
-  
-  
-  #Simulating training and test data
-  if(pd){
-    Sigmarot<-chol(Sigma)
-    Ucal<-matrix(rnorm(n*(p+1),0,1),nrow=n)
-    U1cal<-Ucal%*%Sigmarot
-    Y <- U1cal[,1,drop=F]
-    if(!(is.null(muY))){Y <- Y + rep(muY,n)}
-    Z <- U1cal[,2:(p+1)]
-    X <- Z%*%t(R)
-    if(!(is.null(muX))){X <- sweep(X, 2, muX, "+")}
-    colnames(X) <- as.character(1:p)
-    
-    #Testdata
-    if(!is.null(ntest)){
-      Utest<-matrix(rnorm(ntest*(p+1),0,1),nrow=ntest)
-      U1test<-Utest%*%Sigmarot
-      TESTY<-U1test[,1,drop=F]
-      if(!(is.null(muY))) TESTY <- TESTY + rep(muY,ntest)
-      TESTZ <- U1test[,2:(p+1)]
-      TESTX <- TESTZ%*%t(R)
-      if(!(is.null(muX))){TESTX <- sweep(TESTX, 2, muX, "+")}
-      colnames(TESTX) <- as.character(1:p)
-    }else{
-      TESTX <- NULL
-      TESTY <- NULL
-    }
-    
-   
-  }else{stop("Correlation matrix is not positive definit \n")}
-  
-  res <- list()
-  res$call <- match.call()
-  res$X <- X
-  res$Y <- Y
-  res$beta <- betaX
-  res$beta0 <- beta0
-  res$relpred <- qpos
-  res$TESTX <- TESTX
-  res$TESTY <- TESTY
-  res$n <- n
-  res$p <- p
-  res$m <- m
-  res$q <- q
-  res$gamma <- gamma
-  res$lambda <- lambdas
-  res$R2 <- drop(R2)
-  res$relpos <- relpos
-  res$minerror <- minerror
-  res$r <- r
-  res$Sigma <- Sigma
-  res$Rotation <- R
-  class(res) <- "simrel"
-  return(res)
+#' Simulation of Multivariate Linear Model Data
+#' @param n Number of observations.
+#' @param p Number of variables.
+#' @param q An integer for univariate, a vector of 3 integers for bivariate and 3 or more for multivariate simulation (for details see Notes).
+#' @param relpos A list (vector in case of univariate simulation) of position of relevant component for predictor variables corresponding to each response.
+#' @param gamma A declining (decaying) factor of eigenvalues of predictors (X). Higher the value of \code{gamma}, the decrease of eigenvalues will be steeper.
+#' @param R2 Vector of coefficient of determination (proportion of variation explained by predictor variable) for each relevant response components.
+#' @param type Type of simulation - \code{univariate}, \code{bivariate} and \code{multivariate}
+#' @param ... Since this is a wrapper function to simulate univariate, bivariate or multivariate, it calls their respective function. This parameter should contain all the necessary arguements for respective simulations. See \code{\link{unisimrel}}, \code{\link{bisimrel}} and \code{\link{multisimrel}}
+#' @return A simrel object with all the input arguments along with following additional items.
+#'     \item{X}{Simulated predictors}
+#'     \item{Y}{Simulated responses}
+#'     \item{W}{Simulated predictor components}
+#'     \item{Z}{Simulated response components}
+#'     \item{beta}{True regression coefficients}
+#'     \item{beta0}{True regression intercept}
+#'     \item{relpred}{Position of relevant predictors}
+#'     \item{testX}{Test Predictors}
+#'     \item{testY}{Test Response}
+#'     \item{testW}{Test predictor components}
+#'     \item{testZ}{Test response components}
+#'     \item{minerror}{Minimum model error}
+#'     \item{Xrotation}{Rotation matrix of predictor (R)}
+#'     \item{Yrotation}{Rotation matrix of response (Q)}
+#'     \item{type}{Type of simrel object \emph{univariate} or \emph{multivariate}}
+#'     \item{lambda}{Eigenvalues of predictors}
+#'     \item{SigmaWZ}{Variance-Covariance matrix of components of response and predictors}
+#'     \item{SigmaWX}{Covariance matrix of response components and predictors}
+#'     \item{SigmaYZ}{Covariance matrix of response and predictor components}
+#'     \item{Sigma}{Variance-Covariance matrix of response and predictors}
+#'     \item{RsqW}{Coefficient of determination corresponding to response components}
+#'     \item{RsqY}{Coefficient of determination corresponding to response variables}
+#' @keywords simulation, linear model, linear model data
+#' @references Sæbø, S., Almøy, T., & Helland, I. S. (2015). simrel—A versatile tool for linear model data simulation based on the concept of a relevant subspace and relevant predictors. Chemometrics and Intelligent Laboratory Systems, 146, 128-135.
+#' @references Almøy, T. (1996). A simulation study on comparison of prediction methods when only a few components are relevant. Computational statistics & data analysis, 21(1), 87-107.
+#' @export
+
+simrel <- function (n, p, q, relpos, gamma, R2, type = "univariate", ...) {
+  cl <- match.call(expand.dots = FALSE)
+  cl$type <- match.arg(type, c("univariate", "bivariate", "multivariate"))
+
+  sim <- cl$sim
+  muX <- cl$muX
+  muY <- cl$muY
+
+  ## ---- Validation of parameters --------------------------
+  stopMsg <- c()
+  switch(type,
+         univariate = {
+           if (length(q) != 1 & !is.numeric(q))
+             stopMsg <-
+               append(stopMsg, "Relevant number of variables in univariate simulation should be specified by an integer.")
+           if (!is.vector(relpos) & !is.numeric(relpos))
+             stopMsg <-
+               append(stopMsg, "Relevant position of components in univariate simulation should be specified by a vector of integer.")
+           if (length(R2) != 1 & !is.numeric(R2) & R2 < 0 & R2 > 1)
+             stopMsg <-
+               append(stopMsg, "Coefficient of variation in univariate simulation must be specified by a number between 0 and 1.")
+           if (!is.null(sim)) {
+             if (sim$type != "univariate") stopMsg <- append(stopMsg, "Not univariate simrel object.")
+           }
+           if (!is.null(muY))
+             if (!is.numeric(muY) & length(muY) != 1) stopMsg <- append(stopMsg, "Univariate simulation can have only one response and a mean for it.")
+         },
+         bivariate = {
+           if (length(q) != 3 & !is.numeric(q))
+             stopMsg <-
+               append(stopMsg, "Relevant number of variables in bivariate simulation should be specified by a vector of 3 integers.")
+           if (!is.list(relpos) & length(relpos) != 2 & !all(sapply(relpos, is.numeric)))
+             stopMsg <-
+               append(stopMsg, "Relevant position of components in bivariate simulation should be a list with vectors of integer.")
+           if (length(R2) != 2 & !is.numeric(R2))
+             stopMsg <-
+               append(stopMsg, "Coefficient of variation in bivariate simulation must be a vector of two numbers between 0 and 1.")
+           if (!is.null(sim)) {
+             if (sim$type != "bivariate") stopMsg <- append(stopMsg, "Not bivariate simrel object.")
+           }
+           if (!is.null(muY))
+             if (!is.numeric(muY) & length(muY) != 2)
+               stopMsg <- append(stopMsg, "Bivariate simulation can have only two response and a mean for it.")
+         },
+         multivariate = {
+           if (!is.numeric(q))
+             stopMsg <-
+               append(stopMsg, "Relevant number of variables in multivariate simulation should be a vector of integers.")
+           if (!is.list(relpos) & !all(sapply(relpos, is.numeric)))
+             stopMsg <-
+               append(stopMsg, "Relevant position of components in multivariate simulation should be a list with vectors of integer.")
+           if (!is.numeric(R2))
+             stopMsg <-
+               append(stopMsg, "Coefficient of variation in multivariate simulation must be a vector of numbers between 0 and 1.")
+           if (!is.null(sim)) {
+             if (sim$type != "multivariate") stopMsg <- append(stopMsg, "Not multivariate simrel object.")
+           }
+           if (!is.null(muY))
+             if (!is.numeric(muY))
+               stopMsg <- append(stopMsg, "Mean vector must be numeric")
+         })
+
+  if (length(gamma) != 1 & !is.numeric(gamma) & gamma < 0 & gamma > 1)
+    stopMsg <-
+      append(stopMsg, "Decaying factor of eigenvalues in univariate simulation must be specified by a number between 0 and 1.")
+  if (!is.null(sim))
+    if (class(sim) == "simrel") stopMsg <- append(stopMsg, "Unknown simulation object.")
+  if (!is.null(muX))
+    if (length(muX) != p) stopMsg <- append(stopMsg, "Please input mean vector of correct dimension.")
+
+  if (length(stopMsg) >= 1) stop(stopMsg)
+
+  sim_fun <- switch(type, univariate = unisimrel, bivariate = bisimrel, multivariate = multisimrel)
+  sobj <- sim_fun(n, p, q, relpos, gamma, R2, ...)
+  sobj$call <- match.call()
+
+  return(sobj)
 }

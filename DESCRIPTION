@@ -1,16 +1,31 @@
-Encoding: latin1
 Package: simrel
-Type: Package
-Title: Linear Model Data Simulation and Design of Computer Experiments
-Version: 1.0-1
-Date: 2014-11-28
-Author: Solve Sæbø
-Maintainer: Solve Sæbø <solve.sabo@nmbu.no>
-Description: Facilitates data simulation from a random regression model where the data properties can be controlled by a few input parameters. The data simulation is based on the concept of relevant latent components and relevant predictors, and was developed for the purpose of testing methods for variable selection for prediction. Included are also functions for designing computer experiments in order to investigate the effects of the data properties on the performance of the tested methods. The design is constructed using the Multi-level Binary Replacement (MBR) design approach which makes it possible to set up fractional designs for multi-factor problems with potentially many levels for each factor. 
-License: GPL-2
+Title: Simulation of Multivariate Linear Model Data
+Version: 2.0
+Authors@R: c(
+    person("Raju", "Rimal", email = "raju.rimal@nmbu.no", role = c("aut", "cre")),
+    person("Solve", "SÃ¦bÃ¸", email = "solve.sabo@nmbu.no", role = c("aut", "ths"), comment = "Original Creator of the package"))
+Description: Simulate multivariate linear model data is useful in research and education weather 
+    for comparison or create data with specific properties. This package lets user to simulate
+    linear model data of wide range of properties with few tuning parameters.
+    The package also consist of function to create plots for the simulation
+    objects and A shiny app as RStudio gadget. It can be a handy tool for model comparison, 
+    testing and many other purposes.
+Depends: R (>= 3.5.0)
+License: GPL-3 | file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
+VignetteBuilder: knitr
+BugReports: https://github.com/simulatr/simrel/issues
+URL: https://simulatr.github.io/simrel/
 Repository: CRAN
-Depends: FrF2, sfsmisc
-Suggests: pls
-Packaged: 2014-11-28 23:11:24 UTC; solvsa
+Imports: FrF2, ggplot2, gridExtra, jsonlite, magrittr, miniUI, purrr,
+        reshape2, rstudioapi, scales, sfsmisc, shiny, tibble, tidyr,
+        rlang, testthat
+Suggests: covr, knitr, pls
 NeedsCompilation: no
-Date/Publication: 2014-11-29 07:59:54
+Packaged: 2019-04-01 16:55:23 UTC; therimalaya
+Author: Raju Rimal [aut, cre],
+  Solve SÃ¦bÃ¸ [aut, ths] (Original Creator of the package)
+Maintainer: Raju Rimal <raju.rimal@nmbu.no>
+Date/Publication: 2019-04-01 18:00:09 UTC
