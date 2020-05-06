@@ -4,8 +4,7 @@
 \alias{cov_plot_data}
 \title{Prepare data for Plotting Covariance Matrix}
 \usage{
-cov_plot_data(sobj, type = "relpos", ordering = TRUE,
-  facetting = TRUE)
+cov_plot_data(sobj, type = "relpos", ordering = TRUE, facetting = TRUE)
 }
 \arguments{
 \item{sobj}{A simrel object}
@@ -28,10 +27,6 @@ sobj <- simrel(n = 100, p = 10, q = c(4, 5), relpos = list(c(1, 2, 3), c(4, 6, 7
                R2 = c(0.8, 0.7), ypos = list(c(1, 3), 2), gamma = 0.7, type = "multivariate")
 head(cov_plot_data(sobj))
 }
-\keyword{covariance}
-\keyword{data,}
-\keyword{linear}
-\keyword{model}
-\keyword{model,}
-\keyword{plot}
-\keyword{simulation,}
+\concept{covariance plot}
+\concept{linear model}
+\concept{simulation}

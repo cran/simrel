@@ -5,7 +5,9 @@
 #' @param ordering TRUE for ordering the covariance for block diagonal display
 #' @param facetting TRUE for facetting the predictor and response space. FALSE will give a single facet plot
 #' @return A data frame with covariances and related values based on \code{type} argument that is  ready to plot
-#' @keywords simulation, linear model, linear model data, covariance plot
+#' @concept simulation 
+#' @concept linear model 
+#' @concept covariance plot
 #' @examples
 #' sobj <- simrel(n = 100, p = 10, q = c(4, 5), relpos = list(c(1, 2, 3), c(4, 6, 7)), m = 3,
 #'                R2 = c(0.8, 0.7), ypos = list(c(1, 3), 2), gamma = 0.7, type = "multivariate")
@@ -95,7 +97,8 @@ cov_plot_data <- function(sobj, type = "relpos", ordering = TRUE, facetting = TR
     if (simtype == "bivariate") {
         df$col <- factor(df$col, levels = c(sort(unique(df$col)[grepl(yvar, unique(df$col))]), "Both", "None", NA))
     } else {
-        df$col <- factor(df$col, levels = c(sort(unique(df$col)[grepl(yvar, unique(df$col))]), "None", NA))
+        col_lvl <- c(sort(unique(df$col)[grepl(yvar, unique(df$col))]), "None", NA)
+        df$col <- factor(df$col, levels = col_lvl)
     }
     if (ordering) {
         df$v1 <- factor(as.character(df$v1), axlbl[idx])
@@ -134,7 +137,7 @@ cov_plot_data <- function(sobj, type = "relpos", ordering = TRUE, facetting = TR
 #' @references Rimal, R., Almøy, T., & Sæbø, S. (2018). A tool for simulating multi-response linear model data. Chemometrics and Intelligent Laboratory Systems, 176, 1-10.
 #' @export
 plot_cov <- function(sobj, type = "relpos", ordering = TRUE, facetting = TRUE) {
-    dta <- cov_plot_data(sobj, type = 'relpos', ordering = TRUE, facetting = TRUE)
+    dta <- cov_plot_data(sobj, type = type, ordering = ordering, facetting = facetting)
     plt <- ggplot(dta, aes_string("v1", "v2", fill = "col")) +
         geom_tile(aes_string(alpha = "cov"), color = "grey70",
                   show.legend = c(alpha = FALSE)) +

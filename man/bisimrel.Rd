@@ -4,9 +4,19 @@
 \alias{bisimrel}
 \title{Simulation of Multivariate Linear Model data with response}
 \usage{
-bisimrel(n = 50, p = 100, q = c(10, 10, 5), rho = c(0.8, 0.4),
-  relpos = list(c(1, 2), c(2, 3)), gamma = 0.5, R2 = c(0.8, 0.8),
-  ntest = NULL, muY = NULL, muX = NULL, sim = NULL)
+bisimrel(
+  n = 50,
+  p = 100,
+  q = c(10, 10, 5),
+  rho = c(0.8, 0.4),
+  relpos = list(c(1, 2), c(2, 3)),
+  gamma = 0.5,
+  R2 = c(0.8, 0.8),
+  ntest = NULL,
+  muY = NULL,
+  muX = NULL,
+  sim = NULL
+)
 }
 \arguments{
 \item{n}{Number of training samples}
@@ -67,8 +77,6 @@ Sæbø, S., Almøy, T., & Helland, I. S. (2015). simrel—A versatile tool for l
 
 Almøy, T. (1996). A simulation study on comparison of prediction methods when only a few components are relevant. Computational statistics & data analysis, 21(1), 87-107.
 }
-\keyword{data}
-\keyword{linear}
-\keyword{model}
-\keyword{model,}
-\keyword{simulation,}
+\concept{linear model data}
+\concept{simulation}
+\keyword{datagen}

@@ -5,7 +5,6 @@
 #'the data properties on the performance of estimation/prediction methods. The mbrdsim function
 #'takes as input a list containing a set of factors with their levels. The output is an MBR-design
 #'with the combinations of the factor levels to be run.
-#'@usage mbrdsim(simlist, fraction, gen=NULL)
 #'@param simlist A named list containing the levels of a set of (multi-level) factors.
 #'@param fraction Design fraction at bit-level. Full design: fraction=0, half-fraction: fraction=1, and so on.
 #'@param gen Generators for the fractioning at the bit level. Default is \code{NULL} for which the generators are chosen
